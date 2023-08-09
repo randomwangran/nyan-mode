@@ -37,6 +37,7 @@
 
 ;;;; Requirements
 
+(require 'org-real)
 (require 'ts)
 
 (defcustom zk-reminder-string "Wk:"
@@ -47,6 +48,11 @@
 (defcustom zk-reminder-date-string "2021-01-01"
   "By setting date, the modeline will show how many weeks past
 from a date."
+  :type 'string
+  :group 'nyan)
+
+(defcustom zk-active-proj-path "~/org.org"
+  ""
   :type 'string
   :group 'nyan)
 
@@ -81,6 +87,31 @@ from a date."
     (insert-file-contents filePath)
     (split-string (buffer-string) "\n" t)))
 
+(defun open-proj-button-function ()
+  (interactive)
+  (call-interactively 'dummy/org-real-headlines))
+
+(setq open-pad-button
+      (propertize " [Pad] "
+                  'help-echo "Click to Open Active Projects"
+                  'mouse-face 'mode-line-highlight
+                  'local-map (let ((map (make-sparse-keymap)))
+                               (define-key map [mode-line mouse-1] 'open-proj-button-function)
+                               map)))
+
+(defun dummy/org-real-headlines ()
+  "View all org headlines as an org real diagram.
+
+MAX-LEVEL is the maximum level to show headlines for."
+  (interactive)
+  (delete-other-windows)
+  (find-file zk-active-proj-path)
+  (org-real--pp
+   (org-real--parse-headlines)
+   nil
+   'display-buffer-same-window
+   t 2 3))
+
 (defun org-roam-mode-line-need-more-effort ()
   (when (string-match-p (expand-file-name org-roam-directory) (format "%s" buffer-file-name))
     (progn (setq mode-line-format
@@ -104,9 +135,14 @@ from a date."
                   zk-reminder-string
                   (format "%s" (zk-how-many-weeks-from-a-date))
                   'global-mode-string
+                  "                                                                     "
+                  open-pad-button
                   ))
            (force-mode-line-update)
            )))
+
+;;  (setq mode-line-end-spaces
+;;        (list open-pad-button))
 
 (add-hook 'before-save-hook #'org-roam-mode-line-need-more-effort)
 
