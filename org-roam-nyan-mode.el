@@ -31,6 +31,7 @@
 ;; Inspired by Nyan-mode written by Jacek "TeMPOraL" Zlydach.
 ;; See: https://github.com/TeMPOraL/nyan-mode/
 
+
 ;;; History:
 
 ;;; Code:
@@ -106,6 +107,7 @@ MAX-LEVEL is the maximum level to show headlines for."
   (interactive)
   (delete-other-windows)
   (find-file zk-active-proj-path)
+  (widen)
   (org-real--pp
    (org-real--parse-headlines)
    nil
@@ -321,7 +323,7 @@ This can be t or nil."
 
 (defun nyan-add-scroll-handler (string percentage buffer)
   "Propertize `STRING' to scroll `BUFFER' to `PERCENTAGE' on click."
-  (lexical-let ((percentage percentage)
+  (let ((percentage percentage)
                 (buffer buffer))
     (propertize string 'keymap `(keymap (mode-line keymap (down-mouse-1 . ,(lambda () (interactive) (nyan-scroll-buffer percentage buffer))))))))
 
